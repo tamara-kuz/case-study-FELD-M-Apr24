@@ -37,6 +37,8 @@ WITH order_base AS (
       WHEN n_orders = 1 THEN NULL
       ELSE customer_lifetime
     END AS customer_lifetime
+    , n_orders
+    , first_order_date AS customer_since_date
     , SUM(prd.unitprice * ord_d.quantity) AS total_amount
     , GROUP_CONCAT(
       '{"product_id": ' || ord_d.productid || ', "product_name": "' || prd.productName || '", "quantity": ' || ord_d.quantity || ', "discounted": ' || prd.unitprice || '}',
@@ -47,7 +49,7 @@ WITH order_base AS (
   LEFT JOIN {{ ref('stg_products') }} AS prd ON prd.productid = ord_d.productid
   LEFT JOIN {{ ref('stg_customers') }} AS cus ON cus.customerID = ob.customer_id
   LEFT JOIN add_customer_metrics AS add_m ON add_m.customer_id = ob.customer_id
-  GROUP BY 1, 2, 3, 4, 5, 6
+  GROUP BY 1, 2, 3, 4, 5, 6, 7, 8
 )
 
 SELECT *
