@@ -1,4 +1,4 @@
--- Source: Define the stg table containing order data
+-- Source: Define the stg table containing order details data
 {{ config(
     materialized='table',
 ) }}
