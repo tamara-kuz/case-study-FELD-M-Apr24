@@ -2,8 +2,22 @@
 version: 2
 
 models:
-  - name: my_first_dbt_model
-    description: "A starter dbt model"
+  - name: dim_customers
+    description: " A dimension customers table with additional sales metric like number of orders, max/total order value. Unique ID for each customer is field customer_id. All customers in the DB are available, even if they haven't made a purchase yet."
+    columns:
+      - name: customer_id
+        tests:
+          - unique
+          - not_null
 
-  - name: my_second_dbt_model
-    description: "A starter dbt model"
+  - name: fact_sales
+    description: "A transactional fact table for sales at the product level with additional dimensions and metrics. The most granular level is product id, which is aggregated into a stuct (please unnest to access). Additional sustomer and order data is calculated."
+    columns:
+      - name: order_id
+        tests:
+          - unique
+          - not_null
+
+  - name: fact_customers_cohort
+    description: "A dimension montly cohort of customers per country table with total_order_value info. If no new customer appeared this month, the cohort is present with NULL value"
+

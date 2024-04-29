@@ -3,6 +3,5 @@
     materialized='table',
 ) }}
 
-
 SELECT *
 FROM {{ source('main', 'orders') }} 

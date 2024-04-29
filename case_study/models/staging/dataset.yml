@@ -5,9 +5,23 @@ sources:
     schema: main
     tables:
       - name: orders
+        columns:
+          - name: orderID
+            tests:
+              - unique
       - name: categories
       - name: customers
+        columns:
+          - name: customerID
+            tests:
+              - unique
+              - not_null
       - name: employees
       - name: order_details
       - name: products
+        columns:
+          - name: productID
+            tests:
+              - unique
+              - not_null
       - name: shippers

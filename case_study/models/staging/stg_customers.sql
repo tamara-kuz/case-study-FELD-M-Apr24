@@ -4,5 +4,16 @@
 ) }}
 
 
-SELECT *
+SELECT
+  customerID
+  ,	companyName
+  , contactName
+  , contactTitle
+  , address
+  , city
+  , region
+  , postalCode
+  , country
+  , phone
+  , fax
 FROM {{ source('main', 'customers') }}

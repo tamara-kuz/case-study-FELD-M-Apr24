@@ -3,34 +3,38 @@
     materialized='table',
 ) }}
 
-
+-- STEP 1. Define a CTE to select essential order information from the staging orders table.
 WITH order_base AS (
   SELECT
     orderID AS order_id
-    , DATE(orderDate) AS order_date
+    , orderDate AS order_date
     , customerID AS customer_id
   FROM {{ ref('stg_orders') }}
 )
 
+-- STEP 2. Define a CTE to calculate various metrics related to customer order history.
 , add_customer_metrics AS (
   SELECT
     customer_id
     , MIN(order_date) AS first_order_date
     , MAX(order_date) AS last_order_date
+    -- use sqlite julianday fun
     , julianday(MAX(order_date)) - julianday(MIN(order_date)) AS customer_lifetime
     , COUNT(*) AS n_orders
   FROM order_base 
   GROUP BY 1
 )
 
+-- STEP 2. Define a CTE to aggregate order item details along with customer and product information.
 , order_item_base AS (
   SELECT
     ob.order_id
-    , ob.order_date
+    , DATE(ob.order_date) AS order_date
     , ob.customer_id
     , cus.companyname AS customer_name
+    -- customer is new if the date of purchase is the min purchasedate of that customer
     , CASE
-      WHEN n_orders = 1 OR ob.order_date = first_order_date THEN 'new'
+      WHEN ob.order_date = first_order_date THEN 'new'
       ELSE 'recurring'
     END AS customer_type
     , CASE
@@ -38,7 +42,7 @@ WITH order_base AS (
       ELSE customer_lifetime
     END AS customer_lifetime
     , n_orders
-    , first_order_date AS customer_since_date
+    , DATE(first_order_date) AS customer_since_date
     , SUM(prd.unitprice * ord_d.quantity) AS total_amount
     , GROUP_CONCAT(
       '{"product_id": ' || ord_d.productid || ', "product_name": "' || prd.productName || '", "quantity": ' || ord_d.quantity || ', "discounted": ' || prd.unitprice || '}',
@@ -52,5 +56,6 @@ WITH order_base AS (
   GROUP BY 1, 2, 3, 4, 5, 6, 7, 8
 )
 
+-- Select all columns from the order_item_base CTE.
 SELECT *
 FROM order_item_base
